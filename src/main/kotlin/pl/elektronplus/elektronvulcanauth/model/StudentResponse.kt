@@ -1,6 +1,6 @@
 package pl.elektronplus.elektronvulcanauth.model
 
-data class StudentModel(
+data class StudentResponse(
     var name: String,
     var surname: String,
     var classId: String
