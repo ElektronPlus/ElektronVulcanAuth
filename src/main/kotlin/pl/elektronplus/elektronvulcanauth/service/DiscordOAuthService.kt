@@ -1,6 +1,7 @@
 package pl.elektronplus.elektronvulcanauth.service
 
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -14,7 +15,10 @@ import pl.elektronplus.elektronvulcanauth.config.DiscordConfig
 import pl.elektronplus.elektronvulcanauth.model.DiscordOAuthResponse
 
 @Service
-class DiscordOAuthService(val config: DiscordConfig) {
+class DiscordOAuthService {
+
+    @Autowired
+    private lateinit var config: DiscordConfig
 
     private val logger = KotlinLogging.logger {}
 

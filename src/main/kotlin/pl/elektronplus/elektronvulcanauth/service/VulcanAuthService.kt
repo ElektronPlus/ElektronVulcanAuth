@@ -4,13 +4,17 @@ import io.github.wulkanowy.sdk.Sdk
 import io.github.wulkanowy.sdk.scrapper.login.BadCredentialsException
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import pl.elektronplus.elektronvulcanauth.config.VulcanConfig
 import pl.elektronplus.elektronvulcanauth.model.LoginRequest
 import pl.elektronplus.elektronvulcanauth.model.StudentResponse
 
 @Service
-class VulcanAuthService(val config: VulcanConfig) {
+class VulcanAuthService {
+
+    @Autowired
+    private lateinit var config: VulcanConfig
 
     private val logger = KotlinLogging.logger {}
 
