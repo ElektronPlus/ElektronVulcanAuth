@@ -1,9 +1,9 @@
 package pl.elektronplus.elektronvulcanauth.service
 
 import mu.KotlinLogging
+import org.json.JSONArray
+import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.configurationprocessor.json.JSONArray
-import org.springframework.boot.configurationprocessor.json.JSONObject
 import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
@@ -82,7 +82,7 @@ class DiscordApiService {
         body.put("roles", roles)
 
         val request = HttpEntity(body.toString(), headers)
-        val response = restTemplate.exchange(
+        restTemplate.exchange(
             url, HttpMethod.PUT, request, String::class.java
         )
     }
