@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+  <title>Logowanie VULCAN</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h1>Pomyślnie dodano do serwera Discord konto: </h1>
+<p th:text="${student.name} + ' ' + ${student.surname} + ' ' + ${student.className}" />
+<a href="https://discord.com/channels/@me">Otworz Discord</a>
+</body>
+</html>

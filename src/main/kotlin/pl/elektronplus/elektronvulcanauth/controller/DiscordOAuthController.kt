@@ -1,11 +1,15 @@
 package pl.elektronplus.elektronvulcanauth.controller;
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.*
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import pl.elektronplus.elektronvulcanauth.model.DiscordOAuthResponse
 import pl.elektronplus.elektronvulcanauth.service.DiscordOAuthService
 
-@RestController
+@Controller
 @RequestMapping(value = ["/"])
 class DiscordOAuthController {
 
@@ -18,7 +22,8 @@ class DiscordOAuthController {
     }
 
     @GetMapping("/authorize")
-    fun discordAuthorize(@RequestParam code: String) {
-        return service.receiveDiscordAuthorization(code)
+    fun discordAuthorize(@RequestParam code: String): String {
+        val discordOAuth: DiscordOAuthResponse? = service.receiveDiscordAuthorization(code)
+        return "redirect:/vulcan/" + discordOAuth?.access_token
     }
 }

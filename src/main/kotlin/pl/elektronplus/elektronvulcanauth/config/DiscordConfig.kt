@@ -8,5 +8,11 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class DiscordConfig(
     val redirectUrl: String,
     val clientId: String,
-    val secret: String
+    val secret: String,
+    val token: String,
+
+    val server1ID: String,
+    val server2ID: String,
+    val server3ID: String,
+    val server4ID: String
 )

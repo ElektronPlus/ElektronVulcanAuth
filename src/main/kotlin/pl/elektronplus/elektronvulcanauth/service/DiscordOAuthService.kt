@@ -3,7 +3,6 @@ package pl.elektronplus.elektronvulcanauth.service
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpEntity
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -34,7 +33,7 @@ class DiscordOAuthService {
         return ModelAndView("redirect:${url}")
     }
 
-    fun receiveDiscordAuthorization(code: String) {
+    fun receiveDiscordAuthorization(code: String): DiscordOAuthResponse? {
         logger.info { code }
         val url = "https://discordapp.com/api/oauth2/token"
         val restTemplate = RestTemplate()
@@ -53,12 +52,7 @@ class DiscordOAuthService {
         val response: ResponseEntity<DiscordOAuthResponse> =
             restTemplate.postForEntity(url, request, DiscordOAuthResponse::class.java)
 
-        logger.info { response.body?.access_token }
-        if (response.statusCode == HttpStatus.OK) {
-            println("Login Successful")
-        } else {
-            println("Login Failed")
-        }
+        return response.body
     }
 
 

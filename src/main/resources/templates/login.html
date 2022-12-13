@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Logowanie VULCAN</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h2 th:text="${error}"></h2>
+<form action="#" th:action="@{/vulcan}" th:object="${loginForm}" method="post">
+    <input type="hidden" th:field="*{accessToken}" th:value="${accessToken}">
+    <p>E-mail <input type="text" th:field="*{email}" /></p>
+    <p>Hasło <input type="text" th:field="*{password}" /></p>
+    <p><button type="submit">Submit</button></p>
+</form>
+</body>
+</html>
