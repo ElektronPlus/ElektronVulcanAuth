@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     application
-    id("org.springframework.boot") version "2.7.3"
-    id("io.spring.dependency-management") version "1.0.13.RELEASE"
+    id("org.springframework.boot") version "2.7.5"
+    id("io.spring.dependency-management") version "1.0.15.RELEASE"
     kotlin("jvm") version "1.6.21"
     kotlin("plugin.spring") version "1.6.21"
 }
@@ -33,7 +33,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
-    implementation("io.github.wulkanowy:sdk:1.8.1")
+    implementation("io.github.wulkanowy.sdk:build:1.8.1")
+    implementation("org.json:json:20220924")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -51,5 +52,5 @@ tasks.withType<Test> {
 }
 
 application {
-    mainClass.set("pl.elektronplus.SanavaulthApplicationKt")
+    mainClass.set("pl.elektronplus.elektronvulcanauth.ElektronVulcanAuthApplicationKt")
 }
