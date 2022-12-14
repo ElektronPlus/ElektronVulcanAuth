@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import pl.elektronplus.elektronvulcanauth.model.LoginForm
+import pl.elektronplus.elektronvulcanauth.service.DiscordApiService
 import pl.elektronplus.elektronvulcanauth.service.VulcanAuthService
 
 
@@ -17,11 +18,17 @@ class VulcanAuthController {
 
     @Autowired
     private lateinit var service: VulcanAuthService
+
+    @Autowired
+    private lateinit var discordService: DiscordApiService
     @PostMapping
     fun getStudent(body: LoginForm, model: Model): String {
-        if(service.login(body, model) == null)
+        val student = service.login(body, model)
+        if(student != null) {
+            return discordService.joinUserToServer(body.accessToken!!, student, model)
+        } else{
             return "login"
-        return "success"
+        }
     }
 
     @GetMapping("/{accessToken}")

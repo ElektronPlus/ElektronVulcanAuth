@@ -1,6 +1,5 @@
 package pl.elektronplus.elektronvulcanauth.service
 
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpEntity
 import org.springframework.http.MediaType
@@ -19,8 +18,6 @@ class DiscordOAuthService {
     @Autowired
     private lateinit var config: DiscordConfig
 
-    private val logger = KotlinLogging.logger {}
-
     fun redirectToAuthorize(): ModelAndView {
         val url = listOf(
             "https://discordapp.com/oauth2/authorize",
@@ -34,7 +31,6 @@ class DiscordOAuthService {
     }
 
     fun receiveDiscordAuthorization(code: String): DiscordOAuthResponse? {
-        logger.info { code }
         val url = "https://discordapp.com/api/oauth2/token"
         val restTemplate = RestTemplate()
 

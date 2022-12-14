@@ -17,13 +17,11 @@ class VulcanAuthService {
     @Autowired
     private lateinit var config: VulcanConfig
 
-    @Autowired
-    private lateinit var service: DiscordApiService
-
     private val logger = KotlinLogging.logger {}
 
     fun login(body: LoginForm, model: Model): StudentResponse? {
         val sdk = Sdk()
+        sdk.setSimpleHttpLogger { }
         val students = runBlocking {
             try {
                 sdk.getStudentsFromScrapper(
@@ -39,22 +37,20 @@ class VulcanAuthService {
 
         var student: StudentResponse? = null
         students.forEach {
-            if(it.schoolSymbol.equals(config.schoolId)) {
+            if(it.schoolSymbol == config.schoolId) {
                 sdk.schoolSymbol = it.schoolSymbol
                 sdk.loginType = it.loginType
                 sdk.studentId = it.studentId
                 sdk.classId = it.classId
 
                 val semester = runBlocking { sdk.getSemesters()[0] }
-                logger.info { "${it.studentName} ${it.studentSurname} ${semester.diaryName}" }
-                student = StudentResponse(it.studentName, it.studentSurname, semester.diaryName)
+                val studentNick = "${it.studentName} ${it.studentSurname}"
+
+                student = StudentResponse(studentNick, semester.diaryName)
+                logger.info { "VULCAN: $studentNick, ${semester.diaryName}" }
             }
         }
 
-        val studentNick = "${student!!.name} ${student!!.surname}"
-
-        service.joinUserToServer(body.accessToken!!, student!!.className, studentNick)
-        model.addAttribute("student", student)
         return student!!
     }
 }

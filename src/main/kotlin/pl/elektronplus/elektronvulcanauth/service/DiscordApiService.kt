@@ -6,9 +6,11 @@ import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.*
 import org.springframework.stereotype.Service
+import org.springframework.ui.Model
 import org.springframework.web.client.RestTemplate
 import pl.elektronplus.elektronvulcanauth.config.DiscordConfig
 import pl.elektronplus.elektronvulcanauth.model.ServerRole
+import pl.elektronplus.elektronvulcanauth.model.StudentResponse
 import pl.elektronplus.elektronvulcanauth.model.User
 import java.util.*
 
@@ -34,7 +36,6 @@ class DiscordApiService {
             url, HttpMethod.GET, request, Array<ServerRole>::class.java
         )
 
-        //response.body?.forEach { role -> logger.info {"${role.name} -> ${role.id}"} }
         val role = response.body?.filter { it.name.lowercase().contains(className.lowercase())}
         return role?.get(0)?.id
     }
@@ -54,10 +55,10 @@ class DiscordApiService {
         return response.body?.id
     }
 
-    fun joinUserToServer(accessToken: String, className: String, nick: String) {
+    fun joinUserToServer(accessToken: String, student: StudentResponse, model: Model): String {
         val userId = getUserId(accessToken)
 
-        val classNumber: Char = className.get(0)
+        val classNumber: Char = student.className[0]
         var serverID = ""
         when (classNumber) {
             '1' -> serverID = config.server1ID
@@ -74,16 +75,27 @@ class DiscordApiService {
         headers.set("Authorization", "Bot ${config.token}")
 
         val roles = JSONArray()
-        roles.put(getServerRoleID(serverID, className))
+        roles.put(getServerRoleID(serverID, student.className))
 
         val body = JSONObject()
         body.put("access_token", accessToken)
-        body.put("nick", nick)
+        body.put("nick", student.nick)
         body.put("roles", roles)
 
         val request = HttpEntity(body.toString(), headers)
-        restTemplate.exchange(
+        val response = restTemplate.exchange(
             url, HttpMethod.PUT, request, String::class.java
         )
+        if(response.statusCode == HttpStatus.NO_CONTENT) {
+            model.addAttribute("info", "Twoje konto discord jest już na serwerze‼️")
+        } else if (response.statusCode == HttpStatus.CREATED) {
+            model.addAttribute("info", "✨Twoje konto discord zostało dodane na serwer✨")
+        } else {
+            model.addAttribute("info", "Coś poszło nie tak: ${response.body}")
+        }
+
+        model.addAttribute("student", student)
+        logger.info { "DISCORD: ${student.nick}, dcID: $userId, serverID: $serverID" }
+        return "success"
     }
 }
