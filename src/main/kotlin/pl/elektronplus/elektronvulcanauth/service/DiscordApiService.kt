@@ -40,7 +40,7 @@ class DiscordApiService {
         return role?.get(0)?.id
     }
 
-    fun getUserId(accessToken: String): String? {
+    fun getDiscordUser(accessToken: String): User? {
         val url = "https://discordapp.com/api/v6/users/@me"
         val restTemplate = RestTemplate()
 
@@ -52,11 +52,12 @@ class DiscordApiService {
             url, HttpMethod.GET, request, User::class.java
         )
 
-        return response.body?.id
+        return response.body
     }
 
     fun joinUserToServer(accessToken: String, student: StudentResponse, model: Model): String {
-        val userId = getUserId(accessToken)
+        val discordUser = getDiscordUser(accessToken)
+        val discordUsername = discordUser?.username + "#" + discordUser?.discriminator
 
         val classNumber: Char = student.className[0]
         var serverID = ""
@@ -67,7 +68,7 @@ class DiscordApiService {
             '4' -> serverID = config.server4ID
         }
 
-        val url = "https://discordapp.com/api/guilds/${serverID}/members/${userId}"
+        val url = "https://discordapp.com/api/guilds/${serverID}/members/${discordUser?.id}"
         val restTemplate = RestTemplate()
 
         val headers = HttpHeaders()
@@ -87,15 +88,15 @@ class DiscordApiService {
             url, HttpMethod.PUT, request, String::class.java
         )
         if(response.statusCode == HttpStatus.NO_CONTENT) {
-            model.addAttribute("info", "Twoje konto discord jest już na serwerze‼️")
+            model.addAttribute("info", "Twoje konto $discordUsername jest już na serwerze‼️")
         } else if (response.statusCode == HttpStatus.CREATED) {
-            model.addAttribute("info", "✨Twoje konto discord zostało dodane na serwer✨")
+            model.addAttribute("info", "✨Twoje konto $discordUsername zostało dodane na serwer✨")
         } else {
             model.addAttribute("info", "Coś poszło nie tak: ${response.body}")
         }
 
         model.addAttribute("student", student)
-        logger.info { "DISCORD: ${student.nick}, dcID: $userId, serverID: $serverID" }
+        logger.info { "DISCORD: ${student.nick}, dcID: ${discordUser?.id}, dcUsername:$discordUsername, serverID: $serverID" }
         return "success"
     }
 }
