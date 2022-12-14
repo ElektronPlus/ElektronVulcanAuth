@@ -44,7 +44,12 @@ class VulcanAuthService {
                 sdk.classId = it.classId
 
                 val semester = runBlocking { sdk.getSemesters()[0] }
-                val studentNick = "${it.studentName} ${it.studentSurname}"
+                var studentName = it.studentName
+                //anti-second name
+                if (studentName.contains(" ")) {
+                    studentName = studentName.substring(0, studentName.indexOf(" "))
+                }
+                val studentNick = "$studentName ${it.studentSurname}"
 
                 student = StudentResponse(studentNick, semester.diaryName)
                 logger.info { "VULCAN: $studentNick, ${semester.diaryName}" }
