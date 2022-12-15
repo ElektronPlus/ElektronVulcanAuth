@@ -32,6 +32,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
+    implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("io.github.wulkanowy.sdk:build:1.8.1")
     implementation("org.json:json:20220924")
