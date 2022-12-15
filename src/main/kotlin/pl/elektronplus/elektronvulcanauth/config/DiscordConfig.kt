@@ -14,5 +14,7 @@ data class DiscordConfig(
     val server1ID: String,
     val server2ID: String,
     val server3ID: String,
-    val server4ID: String
+    val server4ID: String,
+    val server5ID: String,
+    val serverCommunityID: String
 )

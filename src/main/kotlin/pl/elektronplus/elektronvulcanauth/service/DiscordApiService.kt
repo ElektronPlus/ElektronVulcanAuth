@@ -5,6 +5,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.*
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.stereotype.Service
 import org.springframework.ui.Model
 import org.springframework.web.client.RestTemplate
@@ -21,12 +22,12 @@ class DiscordApiService {
     @Autowired
     private lateinit var config: DiscordConfig
 
+    private val restTemplate = RestTemplate()
+
     private val logger = KotlinLogging.logger {}
 
     fun getServerRoleID(serverID: String, className: String): String? {
         val url = "https://discordapp.com/api/guilds/${serverID}/roles"
-        val restTemplate = RestTemplate()
-
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         headers.set("Authorization", "Bot ${config.token}")
@@ -42,8 +43,6 @@ class DiscordApiService {
 
     fun getDiscordUser(accessToken: String): User? {
         val url = "https://discordapp.com/api/v6/users/@me"
-        val restTemplate = RestTemplate()
-
         val headers = HttpHeaders()
         headers.set("Authorization", "Bearer $accessToken")
 
@@ -55,9 +54,39 @@ class DiscordApiService {
         return response.body
     }
 
+    fun joinUserToCommunityServer(accessToken: String, student: StudentResponse, discordUser: User){
+        val serverID = config.serverCommunityID
+        val url = "https://discordapp.com/api/guilds/$serverID/members/${discordUser.id}"
+
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+        headers.set("Authorization", "Bot ${config.token}")
+
+        val roles = JSONArray()
+        roles.put(getServerRoleID(serverID, student.className))
+        roles.put("1052870689352331334")
+
+        val body = JSONObject()
+        body.put("access_token", accessToken)
+        body.put("roles", roles)
+
+        val request = HttpEntity(body.toString(), headers)
+        val response = restTemplate.exchange(
+            url, HttpMethod.PUT, request, String::class.java
+        )
+        if(response.statusCode == HttpStatus.NO_CONTENT) {
+            restTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
+            restTemplate.exchange(
+                url, HttpMethod.PATCH, request, String::class.java
+            )
+        }
+    }
+
     fun joinUserToServer(accessToken: String, student: StudentResponse, model: Model): String {
         val discordUser = getDiscordUser(accessToken)
-        val discordUsername = discordUser?.username + "#" + discordUser?.discriminator
+        joinUserToCommunityServer(accessToken, student, discordUser!!)
+
+        val discordUsername = discordUser.username + "#" + discordUser.discriminator
 
         val classNumber: Char = student.className[0]
         var serverID = ""
@@ -68,8 +97,7 @@ class DiscordApiService {
             '4' -> serverID = config.server4ID
         }
 
-        val url = "https://discordapp.com/api/guilds/${serverID}/members/${discordUser?.id}"
-        val restTemplate = RestTemplate()
+        val url = "https://discordapp.com/api/guilds/${serverID}/members/${discordUser.id}"
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
@@ -88,7 +116,11 @@ class DiscordApiService {
             url, HttpMethod.PUT, request, String::class.java
         )
         if(response.statusCode == HttpStatus.NO_CONTENT) {
-            model.addAttribute("info", "Twoje konto $discordUsername jest już na serwerze‼️")
+            model.addAttribute("info", "Twoje konto $discordUsername było już wcześniej na serwerze, więc zostało ponownie połączone. ❤️")
+            restTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
+            restTemplate.exchange(
+                url, HttpMethod.PATCH, request, String::class.java
+            )
         } else if (response.statusCode == HttpStatus.CREATED) {
             model.addAttribute("info", "✨Twoje konto $discordUsername zostało dodane na serwer✨")
         } else {
@@ -96,7 +128,7 @@ class DiscordApiService {
         }
 
         model.addAttribute("student", student)
-        logger.info { "DISCORD: ${student.nick}, dcID: ${discordUser?.id}, dcUsername:$discordUsername, serverID: $serverID" }
+        logger.info { "DISCORD: ${student.nick}, dcID: ${discordUser.id}, dcUsername:$discordUsername, serverID: $serverID" }
         return "success"
     }
 }
