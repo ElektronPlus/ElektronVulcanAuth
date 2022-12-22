@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
-import pl.elektronplus.elektronvulcanauth.model.DiscordOAuthResponse
 import pl.elektronplus.elektronvulcanauth.service.DiscordOAuthService
 
 @Controller
@@ -23,7 +22,11 @@ class DiscordOAuthController {
 
     @GetMapping("/authorize")
     fun discordAuthorize(@RequestParam code: String): String {
-        val discordOAuth: DiscordOAuthResponse? = service.receiveDiscordAuthorization(code)
-        return "redirect:/vulcan/" + discordOAuth?.access_token
+        val discordOAuth = service.receiveDiscordAuthorization(code)
+        return if (discordOAuth != null) {
+            "redirect:/vulcan/${discordOAuth.access_token}"
+        } else {
+            "redirect:/"
+        }
     }
 }
