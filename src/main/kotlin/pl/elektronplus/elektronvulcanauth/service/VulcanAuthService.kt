@@ -1,6 +1,8 @@
 package pl.elektronplus.elektronvulcanauth.service
 
 import io.github.wulkanowy.sdk.Sdk
+import io.github.wulkanowy.sdk.pojo.RegisterStudent
+import io.github.wulkanowy.sdk.pojo.RegisterUser
 import io.github.wulkanowy.sdk.scrapper.login.BadCredentialsException
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -21,10 +23,9 @@ class VulcanAuthService {
 
     fun login(body: LoginForm, model: Model): StudentResponse? {
         val sdk = Sdk()
-        sdk.setSimpleHttpLogger { }
-        val students = runBlocking {
+        val registerUser: RegisterUser = runBlocking {
             try {
-                sdk.getStudentsFromScrapper(
+                sdk.getUserSubjectsFromScrapper(
                     email = body.email!!,
                     password = body.password!!,
                     scrapperBaseUrl = config.url,
@@ -35,26 +36,38 @@ class VulcanAuthService {
             }
         } ?: return null
 
-        var student: StudentResponse? = null
-        students.forEach {
-            if(it.schoolSymbol == config.schoolId) {
-                sdk.schoolSymbol = it.schoolSymbol
-                sdk.loginType = it.loginType
-                sdk.studentId = it.studentId
-                sdk.classId = it.classId
+        val registerSymbol = registerUser.symbols
+            .filter { it.schools.isNotEmpty() }
+            .first { it.schools.all { school -> school.subjects.isNotEmpty() } }
+        val registerUnit = registerSymbol.schools.first()
+        val registerStudent = registerUnit.subjects.filterIsInstance<RegisterStudent>().first()
+        val semester = registerStudent.semesters.first()
 
-                val semester = runBlocking { sdk.getSemesters()[0] }
-                var studentName = it.studentName
+        sdk.apply {
+            loginType = Sdk.ScrapperLoginType.valueOf(registerUser.loginType?.name!!)
+            symbol = registerSymbol.symbol
+            schoolSymbol = registerUnit.schoolId
+            studentId = registerStudent.studentId
+            diaryId = semester.diaryId
+        }
+
+        var student: StudentResponse? = null
+
+            if(registerUnit.schoolId == config.schoolId) {
+                sdk.studentId = registerStudent.studentId
+                sdk.classId = registerStudent.classId
+
+                var studentName = registerStudent.studentName
+                val studentSurname = registerStudent.studentSurname
                 //anti-second name
                 if (studentName.contains(" ")) {
                     studentName = studentName.substring(0, studentName.indexOf(" "))
                 }
-                val studentNick = "$studentName ${it.studentSurname}"
+                val studentNick = "$studentName $studentSurname"
 
                 student = StudentResponse(studentNick, semester.diaryName)
                 logger.info { "VULCAN: $studentNick, ${semester.diaryName}" }
             }
-        }
 
         return student!!
     }
