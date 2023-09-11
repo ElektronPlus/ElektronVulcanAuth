@@ -34,7 +34,7 @@ dependencies {
 
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
-    implementation("io.github.wulkanowy:sdk:2.1.0")
+    implementation("io.github.wulkanowy.sdk:build:2.1.0")
     implementation("org.json:json:20230227")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
