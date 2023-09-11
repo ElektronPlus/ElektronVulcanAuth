@@ -74,6 +74,7 @@ class DiscordApiService {
         val response = restTemplate.exchange(
             url, HttpMethod.PUT, request, String::class.java
         )
+        sendLogMessage(student, discordUser)
         if(response.statusCode == HttpStatus.NO_CONTENT) {
             restTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
             restTemplate.exchange(
@@ -82,53 +83,68 @@ class DiscordApiService {
         }
     }
 
-    fun joinUserToServer(accessToken: String, student: StudentResponse, model: Model): String {
-        val discordUser = getDiscordUser(accessToken)
-        joinUserToCommunityServer(accessToken, student, discordUser!!)
-
-        val discordUsername = discordUser.username + "#" + discordUser.discriminator
-
-        val classNumber: Char = student.className[0]
-        var serverID = ""
-        when (classNumber) {
-            '1' -> serverID = config.server1ID
-            '2' -> serverID = config.server2ID
-            '3' -> serverID = config.server3ID
-            '4' -> serverID = config.server4ID
-        }
-
-        val url = "https://discordapp.com/api/guilds/${serverID}/members/${discordUser.id}"
+    fun sendLogMessage(student: StudentResponse, discordUser: User) {
+        val url = "https://discordapp.com/api/channels/${config.logChannelID}/messages"
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         headers.set("Authorization", "Bot ${config.token}")
 
-        val roles = JSONArray()
-        roles.put(getServerRoleID(serverID, student.className))
-
         val body = JSONObject()
-        body.put("access_token", accessToken)
-        body.put("nick", student.nick)
-        body.put("roles", roles)
+        body.put("content", "Zweryfikowano ucznia: ${student.nick} ${student.className} <@${discordUser.id}>")
 
         val request = HttpEntity(body.toString(), headers)
-        val response = restTemplate.exchange(
-            url, HttpMethod.PUT, request, String::class.java
+        restTemplate.exchange(
+            url, HttpMethod.POST, request, String::class.java
         )
-        if(response.statusCode == HttpStatus.NO_CONTENT) {
-            model.addAttribute("info", "Twoje konto $discordUsername było już wcześniej na serwerze, więc zostało ponownie połączone. ❤️")
-            restTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
-            restTemplate.exchange(
-                url, HttpMethod.PATCH, request, String::class.java
-            )
-        } else if (response.statusCode == HttpStatus.CREATED) {
-            model.addAttribute("info", "✨Twoje konto $discordUsername zostało dodane na serwer✨")
-        } else {
-            model.addAttribute("info", "Coś poszło nie tak: ${response.body}")
-        }
+    }
 
+    fun joinUserToServer(accessToken: String, student: StudentResponse, model: Model): String {
+        val discordUser = getDiscordUser(accessToken)
+        joinUserToCommunityServer(accessToken, student, discordUser!!)
+
+//        val classNumber: Char = student.className[0]
+//        var serverID = ""
+//        when (classNumber) {
+//            '1' -> serverID = config.server1ID
+//            '2' -> serverID = config.server2ID
+//            '3' -> serverID = config.server3ID
+//            '4' -> serverID = config.server4ID
+//        }
+//
+//        val url = "https://discordapp.com/api/guilds/${serverID}/members/${discordUser.id}"
+//
+//        val headers = HttpHeaders()
+//        headers.contentType = MediaType.APPLICATION_JSON
+//        headers.set("Authorization", "Bot ${config.token}")
+//
+//        val roles = JSONArray()
+//        roles.put(getServerRoleID(serverID, student.className))
+//
+//        val body = JSONObject()
+//        body.put("access_token", accessToken)
+//        body.put("nick", student.nick)
+//        body.put("roles", roles)
+//
+//        val request = HttpEntity(body.toString(), headers)
+//        val response = restTemplate.exchange(
+//            url, HttpMethod.PUT, request, String::class.java
+//        )
+//        if(response.statusCode == HttpStatus.NO_CONTENT) {
+//            model.addAttribute("info", "Twoje konto ${discordUser.username} było już wcześniej na serwerze, więc zostało ponownie połączone. ❤️")
+//            restTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
+//            restTemplate.exchange(
+//                url, HttpMethod.PATCH, request, String::class.java
+//            )
+//        } else if (response.statusCode == HttpStatus.CREATED) {
+//            model.addAttribute("info", "✨Twoje konto ${discordUser.username} zostało dodane na serwer✨")
+//        } else {
+//            model.addAttribute("info", "Coś poszło nie tak: ${response.body}")
+//        }
+
+        model.addAttribute("info", "✨Twoje konto ${discordUser.username} zostało dodane na serwer✨")
         model.addAttribute("student", student)
-        logger.info { "DISCORD: ${student.nick}, dcID: ${discordUser.id}, dcUsername:$discordUsername, serverID: $serverID" }
+        logger.info { "DISCORD: ${student.nick}, dcID: ${discordUser.id}, dcUsername:${discordUser.username} " }
         return "success"
     }
 }
