@@ -36,9 +36,16 @@ class VulcanAuthService {
             }
         } ?: return null
 
-        val registerSymbol = registerUser.symbols
-            .filter { it.schools.isNotEmpty() }
-            .first { it.schools.all { school -> school.subjects.isNotEmpty() } }
+        val registerSymbol = try {
+            registerUser.symbols
+                .filter { it.schools.isNotEmpty() }
+                .first { it.schools.any { school -> school.subjects.isNotEmpty() } }
+        } catch (e: NoSuchElementException) {
+            logger.error { "VULCAN: ${e.message}" }
+            model.addAttribute("error", "Brak ucznia Elektrona")
+            return null
+        }
+        logger.info { "VULCAN: $registerSymbol" }
         val registerUnit = registerSymbol.schools.first()
         val registerStudent = registerUnit.subjects.filterIsInstance<RegisterStudent>().first()
         val semester = registerStudent.semesters.first()
