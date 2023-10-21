@@ -24,7 +24,7 @@ class DiscordOAuthService {
 
     fun redirectToAuthorize(): ModelAndView {
         val url = listOf(
-            "https://discordapp.com/oauth2/authorize",
+            "https://discord.com/oauth2/authorize",
             "?client_id=${config.clientId}",
             "&scope=identify guilds guilds.join",
             "&response_type=code",
@@ -36,7 +36,7 @@ class DiscordOAuthService {
 
     fun receiveDiscordAuthorization(code: String): DiscordOAuthResponse? {
         try {
-            val url = "https://discordapp.com/api/oauth2/token"
+            val url = "https://discord.com/api/oauth2/token"
             val restTemplate = RestTemplate()
 
             val headers = org.springframework.http.HttpHeaders()
