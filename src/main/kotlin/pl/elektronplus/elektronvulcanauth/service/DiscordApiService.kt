@@ -27,7 +27,7 @@ class DiscordApiService {
     private val logger = KotlinLogging.logger {}
 
     fun getServerRoleID(serverID: String, className: String): String? {
-        val url = "https://discordapp.com/api/guilds/${serverID}/roles"
+        val url = "https://discord.com/api/guilds/${serverID}/roles"
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         headers.set("Authorization", "Bot ${config.token}")
@@ -42,7 +42,7 @@ class DiscordApiService {
     }
 
     fun getDiscordUser(accessToken: String): User? {
-        val url = "https://discordapp.com/api/v6/users/@me"
+        val url = "https://discord.com/api/v6/users/@me"
         val headers = HttpHeaders()
         headers.set("Authorization", "Bearer $accessToken")
 
@@ -56,7 +56,7 @@ class DiscordApiService {
 
     fun joinUserToCommunityServer(accessToken: String, student: StudentResponse, discordUser: User){
         val serverID = config.serverCommunityID
-        val url = "https://discordapp.com/api/guilds/$serverID/members/${discordUser.id}"
+        val url = "https://discord.com/api/guilds/$serverID/members/${discordUser.id}"
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
@@ -84,7 +84,7 @@ class DiscordApiService {
     }
 
     fun sendLogMessage(student: StudentResponse, discordUser: User) {
-        val url = "https://discordapp.com/api/channels/${config.logChannelID}/messages"
+        val url = "https://discord.com/api/channels/${config.logChannelID}/messages"
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
